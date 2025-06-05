@@ -1,4 +1,7 @@
-#chart{
+main{
+    display: flex;
+}
+.chart{
     width:600px;
     height: 20rem;
 }

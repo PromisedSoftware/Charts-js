@@ -4,12 +4,18 @@
  * and value is a number that is assigned to the key
  */
 class Chart {
+    #all_value;
+    #nameValuesMap;
+    #canvasWidth
+    #canvasHeight
+    #framePadding
+    #keysCount;
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
         this.max_elements_to_show=4;
-        this.mapNameValues = new Map();
-        this.all_count=0;
+        this.#nameValuesMap = new Map();
+        this.#all_value=0;
 
         this.chartValueHue = 90;
         this.chartValueSaturation = 0.5;
@@ -23,6 +29,7 @@ class Chart {
         this.fontSize =0;
         this.framePaddingPercentage = 0.06;
         this.isFrameRequired = true;
+        this.frameWidth =2;
     }
 
     /**
@@ -33,9 +40,9 @@ class Chart {
      *          element will be incrased by given value
      *      Array of Strings : for every element occurence increases value by 1.
      *      Map : for each key will increase value by given as value
-     *      Object : the same as map if has fields {name:String, count:Number}
+     *      Object : the same as map if has fields {name:String, value:Number}
      * Although this values are valid it's more efficient to use a Map 
-     * @param {String, Array, Map<String,Number>, Object{name:String, count:Number} } element 
+     * @param {String, Array, Map<String,Number>, Object{name:String, value:Number} } element 
      * @param {Number} optionalValue
      */
     add(element,optionalValue){
@@ -44,8 +51,7 @@ class Chart {
         if(elementType ==="Map") this.#addMap(element);
         else if(elementType ==="Array") this.#addArray(element);
         else if(elementType ==="Object"){
-            this.#addMapped(element.name,element.count);
-            console.log(element.name, element.count);
+            this.#addMapped(element.name,element.value);
         }
         else if(elementType === "String"){
             if(!optionalValue) this.#addElement(element);
@@ -55,8 +61,8 @@ class Chart {
     }
     /**
      * Arg is array of strings
-     * This will clear current data and count elements of each repeated value.
-     * it will store name and count of repetition in a map
+     * This will clear current data and value elements of each repeated value.
+     * it will store name and value of repetition in a map
      * where Key is string value from array and value is amount of this string in array
      * @param {string[]} array 
      */
@@ -71,15 +77,15 @@ class Chart {
      */
     #addElement(element) {
         if(element.constructor.name !== "String") throw Error("Element must be string");
-        if (this.mapNameValues.has(element)) {
-            let count = this.mapNameValues.get(element);
-            count++;
-            this.mapNameValues.set(element, count);
+        if (this.#nameValuesMap.has(element)) {
+            let value = this.#nameValuesMap.get(element);
+            value++;
+            this.#nameValuesMap.set(element, value);
         }
         else {
-            this.mapNameValues.set(element, 1);
+            this.#nameValuesMap.set(element, 1);
         }
-        this.all_count++;
+        this.#all_value++;
     }
     /**
      * Add map with element name and value to data
@@ -110,14 +116,14 @@ class Chart {
             console.info("Value passed is not a String type, skipped element. Passed arg: "+ v);
             return;
         }
-        if(this.mapNameValues.has(k)){
-            let value = this.mapNameValues.get(k);
+        if(this.#nameValuesMap.has(k)){
+            let value = this.#nameValuesMap.get(k);
             value += v;
-            this.mapNameValues.set(k,value);
+            this.#nameValuesMap.set(k,value);
         }else{
-            this.mapNameValues.set(k,v);
+            this.#nameValuesMap.set(k,v);
         }
-        this.all_count +=v;
+        this.#all_value +=v;
     }
 
     /**
@@ -129,7 +135,7 @@ class Chart {
      *      Array : decrease value by 1 for every occurence in array.
      *      Map : decrease value of given element passed as Key
      *              by given number given as value
-     * @param {String, Array, Map<String,Number>, Object{name:String, count:Number}} element 
+     * @param {String, Array, Map<String,Number>, Object{name:String, value:Number}} element 
      * @param {Number} optionalValue
      */
     remove(element, optionalValue){
@@ -138,7 +144,7 @@ class Chart {
         if(elementType ==="Map") this.#removeMap(element);
         else if(elementType ==="Array") this.#removeArray(element);
         else if(elementType === "Object"){
-            this.#removeMapped(element.name,element.count);
+            this.#removeMapped(element.name,element.value);
         }
         else if(elementType === "String"){
             if(!optionalValue) this.#removeElement(element);
@@ -162,15 +168,15 @@ class Chart {
      * @param {String} element 
      */
     #removeElement(element) {
-        if (this.mapNameValues.has(element)) {
-            let count = this.mapNameValues.get(element);
-            if(count <= 0){
-                this.mapNameValues.remove(element);
+        if (this.#nameValuesMap.has(element)) {
+            let value = this.#nameValuesMap.get(element);
+            if(value <= 0){
+                this.#nameValuesMap.remove(element);
                 return;
             }
-            count--;
-            this.mapNameValues.set(element, count);
-            this.all_count--;
+            value--;
+            this.#nameValuesMap.set(element, value);
+            this.#all_value--;
         }
     }
     #removeMap(map){
@@ -192,16 +198,16 @@ class Chart {
             console.info("value passed as argument is not a String, element skipped. Passed arg: "+ k); 
             return;
         }
-        if(this.mapNameValues.has(k)){
-            let value = this.mapNameValues.get(k);
+        if(this.#nameValuesMap.has(k)){
+            let value = this.#nameValuesMap.get(k);
             if(value - v >0){
                 value -= v;
-                this.mapNameValues.set(k,value);
-                this.all_count -=v;
+                this.#nameValuesMap.set(k,value);
+                this.#all_value -=v;
             }
             else{
-                this.all_count -= value; 
-                this.mapNameValues.delete(k);
+                this.#all_value -= value; 
+                this.#nameValuesMap.delete(k);
             }
         }
     }
@@ -215,31 +221,31 @@ class Chart {
      */
     clear(arg){
         if(arg === true){
-            this.mapNameValues.clear();
-            this.all_count =0;
+            this.#nameValuesMap.clear();
+            this.#all_value =0;
         }
         else {
-            let count = this.mapNameValues.get(arg);
-            this.#removeMapped(arg,count);
+            let value = this.#nameValuesMap.get(arg);
+            this.#removeMapped(arg,value);
         }
     }
     /**
      * Shows only requested amount of columns on the graph
-     * @param {int} count 
+     * @param {int} value 
      */
-    showOnly(count){
-        if(!count) throw new Error("Count must be positive integer");
-        else if(parseInt(count) <=0) throw new Error("Count must be possitive integer");
-        this.max_elements_to_show = count;
+    showOnly(value){
+        if(!value) throw new Error("value must be positive integer");
+        else if(parseInt(value) <=0) throw new Error("value must be possitive integer");
+        this.max_elements_to_show = value;
     }
     /**
      * Returns value of stored object name.
      * @param {string} element 
-     * @returns int which is count/value of given element
+     * @returns int which is value of given element
      */
-    getCount(element) {
-        if(this.mapNameValues.has(element)){
-            return this.mapNameValues.get(element);
+    getValue(element) {
+        if(this.#nameValuesMap.has(element)){
+            return this.#nameValuesMap.get(element);
         }
         else return 0;
     }
@@ -250,20 +256,20 @@ class Chart {
      * @param {string} separator 
      * @returns array of sorted tags by vale per object name
      */
-    #getSortedByCountAsTag(separator = "#") {
-        return Array.from(this.mapNameValues.entries())
+    #getSortedByValueAsTag(separator = "#") {
+        return Array.from(this.#nameValuesMap.entries())
             .sort((a, b) => {
                 if (b[1] !== a[1]) return b[1] - a[1];
                 return a[0].localeCompare(b[0]);
             })
-            .map(([name, count]) => `${count}${separator}${name}`);
+            .map(([name, value]) => `${value}${separator}${name}`);
     }
     /**
      * Parses tag to object, so first part seperated with character will be value
      * second part is object name
-     * Example 123#banana will return {name:"banana",count:123}
-     * @param {*} objTag 
-     * @param {*} separator 
+     * Example 123#banana will return {name:"banana",value:123}
+     * @param {*} objTag tag like 123#banmana
+     * @param {*} separator character #
      * @returns 
      */
     #parseTagToObject(objTag,separator){
@@ -272,23 +278,23 @@ class Chart {
         let c = objTag.substring(0,indexOfSeparator);
         c = parseInt(objTag);
         let n = objTag.substring(indexOfSeparator+1,objTag.length);
-        return{name:n,count:c}
+        return{name:n,value:c}
     }
-        /**
+     /**
      * Returns amount of objects based on specified before max_elements_to_show
-     * but when optional value is specified then it will return that value
-     * but not more than it stores in the map 
+     * but when optional value is specified then it will return that amount of values
+     * but not more than is stored in the map
      * @param {int} forcedValue optional int
-     * @returns array of objects with name and count property
+     * @returns array of objects with name and value property
      */
     getMostCommonElements(forcedvalue){
-        const sortedItemsByCount = this.#getSortedByCountAsTag("#");
+        const sortedItemsByValue = this.#getSortedByValueAsTag("#");
         const result =[];
         let amount = forcedvalue? forcedvalue: this.max_elements_to_show;
         for(let i =0; i<amount; i++){
-            if(i>=sortedItemsByCount.length) break;
-            if(i >= sortedItemsByCount.length) break;
-            const element= this.#parseTagToObject(sortedItemsByCount[i],"#");
+            if(i>=sortedItemsByValue.length) break;
+            if(i >= sortedItemsByValue.length) break;
+            const element= this.#parseTagToObject(sortedItemsByValue[i],"#");
             result.push(element);
         }
         return result;
@@ -300,14 +306,14 @@ class Chart {
      * @returns {Array} array of single object
      */
     getOtherElementsObject(){
-        const sortedItemsByCount = this.#getSortedByCountAsTag("#");
+        const sortedItemsByValue = this.#getSortedByValueAsTag("#");
         let amount =0;
         let element;
-        for(let i = this.max_elements_to_show; i < sortedItemsByCount.length; i++){
-            element = this.#parseTagToObject(sortedItemsByCount[i],"#");
-            amount += element.count;
+        for(let i = this.max_elements_to_show; i < sortedItemsByValue.length; i++){
+            element = this.#parseTagToObject(sortedItemsByValue[i],"#");
+            amount += element.value;
         }
-        if(this.max_elements_to_show - sortedItemsByCount.length == -1) return [element];
+        if(this.max_elements_to_show - sortedItemsByValue.length == -1) return [element];
         const tag = amount + "#other";
         const elementOther = this.#parseTagToObject(tag,"#");
         elementOther.isOther =true;
@@ -321,14 +327,14 @@ class Chart {
         const mainElemens = this.getMostCommonElements();
         if(!this.showOther) return mainElemens;
         let otherElement = this.getOtherElementsObject();
-        if(otherElement[0].count == 0) otherElement.pop(); 
+        if(otherElement[0].value == 0) otherElement.pop(); 
         const result=[];
         
         for(let i =0; i < mainElemens.length; i++){
             if(otherElement.length ===0){
                 result.push(mainElemens[i]);
             }
-            else if(mainElemens[i].count >= otherElement[0].count){
+            else if(mainElemens[i].value >= otherElement[0].value){
                 result.push(mainElemens[i]);
             }
             else{
@@ -345,17 +351,17 @@ class Chart {
      * @returns 0.0 up to 1.0
      */
     getPercentageByName(elementName) {
-        if(!this.mapNameValues.has(elementName)) return 0; 
-        return this.mapNameValues.get(elementName) / this.all_count;
+        if(!this.#nameValuesMap.has(elementName)) return 0;
+        return this.#nameValuesMap.get(elementName) / this.#all_value;
     }
     getPercentageByObject(object){
         if(!object.isOther) return this.getPercentageByName(object.name);
         else{
-            let mainCount =0;
+            let mainValue =0;
             this.getMostCommonElements().forEach(e=>{
-                mainCount += e.count;
+                mainValue += e.value;
             });
-            return (this.all_count - mainCount)/this.all_count;
+            return (this.#all_value - mainValue)/this.#all_value;
         }
     }
     /**
@@ -421,7 +427,64 @@ class Chart {
         else if(!percentage) percentage =0;
         this.framePaddingPercentage =percentage;
     }
+
     setDrawingFrame(isDrawed){
         this.isFrameRequired = isDrawed? true: false;
+    }
+
+    getMapSize(){
+        return this.#nameValuesMap.size;
+    }
+
+    getCanvasSize(){
+        return {width:this.#canvasWidth, height:this.#canvasHeight};
+    }
+    getFramePadding(){ return this.#framePadding}
+
+    isUpdateRequired(){
+        if(this.#keysCount !== this.getMapSize()) return true;
+        const rect  = this.canvas.getBoundingClientRect();
+        if(this.#canvasHeight !== rect.height) return true;
+        if(this.#canvasWidth !== rect.width) return true;
+        return false;
+    }
+
+    drawText(text,x,y){
+        let drawAreaLeftOffset = this.#framePadding;
+        if(this.isFrameRequired) drawAreaLeftOffset +=this.frameWidth;
+
+        const font_size = typeof this.fontSize =='number'? this.fontSize+"px" : this.fontSize;
+        this.ctx.font =`${font_size} ${this.fontFamily}`;
+        
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillStyle = this.textColor;
+        this.ctx.fillText(text, x+drawAreaLeftOffset, y);
+        
+    }
+
+    /**
+     * update size only fundamental elements,
+     * not elements that are only in extended classess
+     */
+    updateSize(){
+        const rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+
+        this.#canvasWidth = rect.width;
+        this.#canvasHeight = rect.height;
+        this.#framePadding = this.framePaddingPercentage * this.#canvasHeight;
+        this.#keysCount = this.#nameValuesMap.size;
+    }
+
+    drawFrame(){
+        this.ctx.lineWidth = this.frameWidth;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.#framePadding, this.#framePadding);
+        this.ctx.lineTo(this.#framePadding, this.#canvasHeight - this.#framePadding);
+        this.ctx.lineTo(this.#canvasWidth - this.#framePadding ,this.#canvasHeight - this.#framePadding);
+        this.ctx.stroke();
+        this.ctx.closePath();
     }
 }
