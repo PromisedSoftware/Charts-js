@@ -1,1 +1,1 @@
-There is folder called "examples" in root directory with example scripts and comments to explain how to use it.
+There is folder called "examples" in root directory with example scripts and comments that explains how to use it.
