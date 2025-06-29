@@ -1,5 +1,4 @@
 class PieChart extends Chart{
-
     constructor(canvas){
         super(canvas)
     }

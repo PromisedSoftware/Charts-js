@@ -10,7 +10,7 @@ class ColumnChart extends Chart{
     }
 
     /**
-     * sets column width percentage based on section width.
+     * Sets column width percentage based on section width.
      * Section is canvas width divided by amount of columns.
      * percentage should be float between 0.0 and 1.0
      */
@@ -29,7 +29,7 @@ class ColumnChart extends Chart{
      * update size of canvas and elements of canvas. If auto size update
      * is disabled, run this method once before drawing and everytime after
      * dimensions of canvas are modified by css or external methods.
-     * Also Should be called after adding elements.
+     * Also Should be called after adding a new element names.
      */
     updateSize(){
         super.updateSize();

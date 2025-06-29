@@ -29,6 +29,7 @@ class Chart {
         this.fontSize =0;
         this.framePaddingPercentage = 0.06;
         this.isFrameRequired = true;
+        this.frameColor="black";
         this.frameWidth =2;
     }
 
@@ -37,8 +38,8 @@ class Chart {
      * if element is:
      *      String : value will be increased by 1 for that element.
      *      String and optionalValue is passed : value for that
-     *          element will be incrased by given value
-     *      Array of Strings : for every element occurence increases value by 1.
+     *          element will be increased by given value
+     *      Array of Strings : for every element occurrence increases value by 1.
      *      Map : for each key will increase value by given as value
      *      Object : the same as map if has fields {name:String, value:Number}
      * Although this values are valid it's more efficient to use a Map 
@@ -72,7 +73,7 @@ class Chart {
         });
     }
     /**
-     * add string and icrease value of currently stored strings of the same value
+     * add string and increase value of currently stored strings of the same value
      * @param {string} name 
      */
     #addElement(element) {
@@ -132,7 +133,7 @@ class Chart {
      *      String : decrease value by 1 for that element.
      *      String and optionalNumber is passed : decrease value by given
      *          number for that element.
-     *      Array : decrease value by 1 for every occurence in array.
+     *      Array : decrease value by 1 for every occurrence in array.
      *      Map : decrease value of given element passed as Key
      *              by given number given as value
      * @param {String, Array, Map<String,Number>, Object{name:String, value:Number}} element 
@@ -153,7 +154,7 @@ class Chart {
         } 
     }
     /**
-     * Decrease value of given element by all occurences in array
+     * Decrease value of given element by all occurrences in array
      * if value drops to 0, element is removed from map.
      * @param {Array<String>} array 
      */
@@ -235,7 +236,7 @@ class Chart {
      */
     showOnly(value){
         if(!value) throw new Error("value must be positive integer");
-        else if(parseInt(value) <=0) throw new Error("value must be possitive integer");
+        else if(parseInt(value) <=0) throw new Error("value must be positive integer");
         this.max_elements_to_show = value;
     }
     /**
@@ -251,7 +252,7 @@ class Chart {
     }
     /**
      * Gets all data from current map that stores names and values.
-     * then sorts it descending. After sorting it returns value and object name seperated with given
+     * then sorts it descending. After sorting it returns value and object name separated with given
      * string. Example 123#bananas
      * @param {string} separator 
      * @returns array of sorted tags by vale per object name
@@ -265,7 +266,7 @@ class Chart {
             .map(([name, value]) => `${value}${separator}${name}`);
     }
     /**
-     * Parses tag to object, so first part seperated with character will be value
+     * Parses tag to object, so first part separated with character will be value
      * second part is object name
      * Example 123#banana will return {name:"banana",value:123}
      * @param {*} objTag tag like 123#banmana
@@ -287,10 +288,10 @@ class Chart {
      * @param {int} forcedValue optional int
      * @returns array of objects with name and value property
      */
-    getMostCommonElements(forcedvalue){
+    getMostCommonElements(forcedValue){
         const sortedItemsByValue = this.#getSortedByValueAsTag("#");
         const result =[];
-        let amount = forcedvalue? forcedvalue: this.max_elements_to_show;
+        let amount = forcedValue? forcedValue: this.max_elements_to_show;
         for(let i =0; i<amount; i++){
             if(i>=sortedItemsByValue.length) break;
             if(i >= sortedItemsByValue.length) break;
@@ -324,18 +325,18 @@ class Chart {
      * or without "other" if there is no other in returned;
      */
     getMainAndOtherObjectSorted(){
-        const mainElemens = this.getMostCommonElements();
-        if(!this.showOther) return mainElemens;
+        const mainElements = this.getMostCommonElements();
+        if(!this.showOther) return mainElements;
         let otherElement = this.getOtherElementsObject();
         if(otherElement[0].value == 0) otherElement.pop(); 
         const result=[];
         
-        for(let i =0; i < mainElemens.length; i++){
+        for(let i =0; i < mainElements.length; i++){
             if(otherElement.length ===0){
-                result.push(mainElemens[i]);
+                result.push(mainElements[i]);
             }
-            else if(mainElemens[i].value >= otherElement[0].value){
-                result.push(mainElemens[i]);
+            else if(mainElements[i].value >= otherElement[0].value){
+                result.push(mainElements[i]);
             }
             else{
                 result.push(otherElement.pop());
@@ -367,7 +368,7 @@ class Chart {
     /**
     * Set color of columns
     * @param {int} columnHue starting hue 
-    * @param {float} columnSaturation columnt color saturation between 0.0 and 1.0
+    * @param {float} columnSaturation column color saturation between 0.0 and 1.0
     * @param {float} columnLightness  column color lightness between 0.0 and 1.0
     * @param {int} hue_jump hue jump per column
     */
@@ -376,6 +377,10 @@ class Chart {
         this.chartValueSaturation = columnSaturation *100+"%";
         this.chartValueLightness = columnLightness * 100+"%";
         this.hue_jump = hue_jump;
+    }
+
+    setFrameColor(color){
+        this.frameColor = color;
     }
     /**
     * Display mode where:
@@ -428,8 +433,8 @@ class Chart {
         this.framePaddingPercentage =percentage;
     }
 
-    setDrawingFrame(isDrawed){
-        this.isFrameRequired = isDrawed? true: false;
+    setDrawingFrame(isDrew){
+        this.isFrameRequired = isDrew? true: false;
     }
 
     getMapSize(){
@@ -465,7 +470,7 @@ class Chart {
 
     /**
      * update size only fundamental elements,
-     * not elements that are only in extended classess
+     * not elements that are only in extended classes
      */
     updateSize(){
         const rect = this.canvas.getBoundingClientRect();
@@ -479,6 +484,7 @@ class Chart {
     }
 
     drawFrame(){
+        this.ctx.strokeStyle = this.frameColor;
         this.ctx.lineWidth = this.frameWidth;
         this.ctx.beginPath();
         this.ctx.moveTo(this.#framePadding, this.#framePadding);
