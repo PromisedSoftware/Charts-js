@@ -38,7 +38,10 @@ class PieChart extends Chart{
         let radius = Math.min(canvasSize.width/2 - 2 * padding ,canvasSize.height/2 - padding);
         if(this.isFrameRequired) radius -= this.frameWidth;
         
-        let totalDisplayValue = allElements.reduce((sum,el)=>sum + el.value);
+        let totalDisplayValue=0;
+        allElements.forEach(e=>{
+                totalDisplayValue += e.value;
+            });
         let startAngle = 0;
         let methodQueue =[];
         for(let i=0; i<allElements.length; i++){ 

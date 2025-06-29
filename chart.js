@@ -9,7 +9,8 @@ class Chart {
     #canvasWidth
     #canvasHeight
     #framePadding
-    #keysCount;
+    #setOther_isChanged
+    #keysCount
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
@@ -238,6 +239,7 @@ class Chart {
         if(!value) throw new Error("value must be positive integer");
         else if(parseInt(value) <=0) throw new Error("value must be positive integer");
         this.max_elements_to_show = value;
+        this.#setOther_isChanged =true;
     }
     /**
      * Returns value of stored object name.
@@ -407,6 +409,7 @@ class Chart {
      */
     appendOther(showOther){
         this.showOther = showOther? true:false;
+        this.#setOther_isChanged=true;
     }
     /**
      * Set font for text on chart
@@ -447,6 +450,7 @@ class Chart {
     getFramePadding(){ return this.#framePadding}
 
     isUpdateRequired(){
+        if(this.#setOther_isChanged) return true;
         if(this.#keysCount !== this.getMapSize()) return true;
         const rect  = this.canvas.getBoundingClientRect();
         if(this.#canvasHeight !== rect.height) return true;
@@ -473,6 +477,7 @@ class Chart {
      * not elements that are only in extended classes
      */
     updateSize(){
+        this.#setOther_isChanged = false;
         const rect = this.canvas.getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
